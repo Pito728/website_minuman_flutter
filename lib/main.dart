@@ -13,6 +13,12 @@ import 'screens/menu_screen.dart';
 import 'screens/collaboration_screen.dart';
 import 'screens/download_screen.dart';
 
+// Halaman baru
+import 'screens/keranjang_screen.dart';
+import 'screens/riwayat_pesanan_screen.dart';
+import 'screens/login_admin_screen.dart';
+import 'screens/dashboard_admin_screen.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -104,6 +110,12 @@ class _MyAppState extends State<MyApp> {
         '/collaboration': (context) => const CollaborationScreen(),
 
         '/download': (context) => const DownloadScreen(),
+
+        // Route halaman baru
+        '/keranjang': (context) => const KeranjangScreen(),
+        '/riwayat-pesanan': (context) => const RiwayatPesananScreen(),
+        '/admin-login': (context) => const LoginAdminScreen(),
+        '/admin-dashboard': (context) => const DashboardAdminScreen(),
       },
     );
   }
