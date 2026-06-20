@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../services/api_service.dart';
 
 class CustomNavbar extends StatelessWidget {
   final String currentPage;
@@ -52,38 +53,63 @@ class CustomNavbar extends StatelessWidget {
                 size: 30,
               ),
               color: Colors.black,
-              onSelected: (value) {
-                Navigator.pushReplacementNamed(
-                  context,
-                  value,
-                );
+              onSelected: (value) async {
+                if (value == '/logout') {
+                  await ApiService.logout();
+                  if (context.mounted) {
+                    Navigator.pushReplacementNamed(context, '/home');
+                  }
+                } else {
+                  Navigator.pushReplacementNamed(context, value);
+                }
               },
-              itemBuilder: (context) => [
-                const PopupMenuItem(
-                  value: '/about',
-                  child: Text('About'),
-                ),
-                const PopupMenuItem(
-                  value: '/menu',
-                  child: Text('Menu'),
-                ),
-                const PopupMenuItem(
-                  value: '/collaboration',
-                  child: Text('Collaboration'),
-                ),
-                const PopupMenuItem(
-                  value: '/contact',
-                  child: Text('Contact Us'),
-                ),
-                const PopupMenuItem(
-                  value: '/download',
-                  child: Text('Download App'),
-                ),
-                const PopupMenuItem(
-                  value: '/login',
-                  child: Text('Login'),
-                ),
-              ],
+              itemBuilder: (context) {
+                final List<PopupMenuEntry<String>> items = [
+                  const PopupMenuItem(
+                    value: '/about',
+                    child: Text('About', style: TextStyle(color: Colors.white)),
+                  ),
+                  const PopupMenuItem(
+                    value: '/menu',
+                    child: Text('Menu', style: TextStyle(color: Colors.white)),
+                  ),
+                  const PopupMenuItem(
+                    value: '/collaboration',
+                    child: Text('Collaboration', style: TextStyle(color: Colors.white)),
+                  ),
+                  const PopupMenuItem(
+                    value: '/contact',
+                    child: Text('Contact Us', style: TextStyle(color: Colors.white)),
+                  ),
+                  const PopupMenuItem(
+                    value: '/download',
+                    child: Text('Download App', style: TextStyle(color: Colors.white)),
+                  ),
+                ];
+
+                if (ApiService.isLoggedIn()) {
+                  items.add(
+                    const PopupMenuItem(
+                      value: '/cart',
+                      child: Text('Cart', style: TextStyle(color: Colors.green)),
+                    ),
+                  );
+                  items.add(
+                    const PopupMenuItem(
+                      value: '/logout',
+                      child: Text('Logout', style: TextStyle(color: Colors.red)),
+                    ),
+                  );
+                } else {
+                  items.add(
+                    const PopupMenuItem(
+                      value: '/login',
+                      child: Text('Login', style: TextStyle(color: Colors.orange)),
+                    ),
+                  );
+                }
+                return items;
+              },
             ),
           ],
         ),
@@ -146,29 +172,53 @@ class CustomNavbar extends StatelessWidget {
 
           const SizedBox(width: 80),
 
-          _outlineButton(
-            "Admin Login",
-            Colors.blue,
-            () {
-              Navigator.pushNamed(
-                context,
-                '/login',
-              );
-            },
-          ),
+          if (ApiService.isLoggedIn()) ...[
+            _outlineButton(
+              "Cart",
+              Colors.green,
+              () {
+                Navigator.pushNamed(
+                  context,
+                  '/cart',
+                );
+              },
+            ),
+            const SizedBox(width: 18),
+            _outlineButton(
+              "Logout",
+              Colors.red,
+              () async {
+                await ApiService.logout();
+                if (context.mounted) {
+                  Navigator.pushReplacementNamed(context, '/home');
+                }
+              },
+            ),
+          ] else ...[
+            _outlineButton(
+              "Admin Login",
+              Colors.blue,
+              () {
+                Navigator.pushNamed(
+                  context,
+                  '/login',
+                );
+              },
+            ),
 
-          const SizedBox(width: 18),
+            const SizedBox(width: 18),
 
-          _outlineButton(
-            "Customer Login",
-            Colors.orange,
-            () {
-              Navigator.pushNamed(
-                context,
-                '/login',
-              );
-            },
-          ),
+            _outlineButton(
+              "Customer Login",
+              Colors.orange,
+              () {
+                Navigator.pushNamed(
+                  context,
+                  '/login',
+                );
+              },
+            ),
+          ],
 
           const SizedBox(width: 18),
 

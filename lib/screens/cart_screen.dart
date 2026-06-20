@@ -123,13 +123,17 @@ class _CartScreenState extends State<CartScreen> {
     );
 
     if (result['success']) {
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result['message']),
+          content: Text(result['message'] ?? 'Pembayaran berhasil!'),
           backgroundColor: Colors.green,
         ),
       );
+
+      // Navigate to history after successful payment
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/history');
+      }
 
     } else {
 

@@ -22,25 +22,50 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
 
   Future<void> _login() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Email dan password harus diisi'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
 
-    final result = await ApiService.customerLogin(
-      _emailController.text,
-      _passwordController.text,
-    );
+    final result = await ApiService.customerLogin(email, password);
 
     setState(() {
       _isLoading = false;
     });
 
-    if (result['success']) {
+    if (!mounted) return;
+
+    if (result['success'] == true) {
       widget.onLoginSuccess('customer');
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message'] ?? 'Login berhasil!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        '/home',
+        (route) => false,
+      );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result['message']),
+          content: Text(result['message'] ?? 'Login gagal'),
           backgroundColor: Colors.red,
         ),
       );

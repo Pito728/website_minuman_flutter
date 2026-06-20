@@ -32,17 +32,41 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _isLoading = false;
 
   Future<void> _register() async {
+    final username = _usernameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    final confirmPassword = _confirmPasswordController.text.trim();
 
-    if (_passwordController.text !=
-        _confirmPasswordController.text) {
+    // Validasi input kosong
+    if (username.isEmpty || email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Semua field harus diisi"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
 
+    // Validasi password minimal 8 karakter
+    if (password.length < 8) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Password minimal 8 karakter"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Validasi password sama
+    if (password != confirmPassword) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Password tidak sama"),
           backgroundColor: Colors.red,
         ),
       );
-
       return;
     }
 
@@ -51,9 +75,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
 
     final result = await ApiService.customerRegister(
-      _usernameController.text,
-      _emailController.text,
-      _passwordController.text,
+      username,
+      email,
+      password,
       _birthdayController.text,
     );
 
@@ -61,22 +85,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _isLoading = false;
     });
 
-    if (result['success']) {
+    if (!mounted) return;
 
+    if (result['success'] == true) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result['message']),
+          content: Text(result['message'] ?? 'Registrasi berhasil!'),
           backgroundColor: Colors.green,
         ),
       );
 
       Navigator.pop(context);
-
     } else {
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result['message']),
+          content: Text(result['message'] ?? 'Registrasi gagal'),
           backgroundColor: Colors.red,
         ),
       );

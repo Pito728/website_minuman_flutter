@@ -9,12 +9,68 @@ class ApiService {
   // BASE URL
   // =========================
 
-
   // CHROME / WEB
   static const String baseUrl = "http://localhost:4783";
 
   static String? customerEmail;
+  static String? customerName;
+  static int? customerId;
   static String? authToken;
+
+  // Session cookie untuk menjaga session dengan backend
+  static String? _sessionCookie;
+
+  // Helper untuk menambahkan cookie ke headers
+  static Map<String, String> _getHeaders({String? contentType}) {
+    final headers = <String, String>{};
+    if (contentType != null) {
+      headers['Content-Type'] = contentType;
+    }
+    if (_sessionCookie != null) {
+      headers['Cookie'] = _sessionCookie!;
+    }
+    return headers;
+  }
+
+  // Helper untuk menyimpan session cookie dari response
+  static void _saveCookie(http.Response response) {
+    final setCookie = response.headers['set-cookie'];
+    if (setCookie != null) {
+      // Ambil JSESSIONID dari cookie
+      final match = RegExp(r'JSESSIONID=([^;]+)').firstMatch(setCookie);
+      if (match != null) {
+        _sessionCookie = match.group(1);
+      }
+    }
+  }
+
+  // Helper untuk menambahkan jsessionid ke URL (URL Rewriting untuk Tomcat)
+  static Uri _buildUrl(String path) {
+    String urlStr = '$baseUrl$path';
+    
+    if (_sessionCookie != null && _sessionCookie!.isNotEmpty) {
+      final parts = urlStr.split('?');
+      parts[0] = '${parts[0]};jsessionid=$_sessionCookie';
+      urlStr = parts.join('?');
+    }
+
+    Uri uri = Uri.parse(urlStr);
+
+    if (customerId != null) {
+      final queryParams = Map<String, String>.from(uri.queryParameters);
+      queryParams['customerId'] = customerId.toString();
+      uri = uri.replace(queryParameters: queryParams);
+    }
+
+    return uri;
+  }
+
+  // =========================
+  // CEK LOGIN STATUS
+  // =========================
+  static bool isLoggedIn() {
+    return customerEmail != null && customerId != null;
+  }
 
   // =========================
   // ADMIN LOGIN
@@ -25,15 +81,15 @@ class ApiService {
   ) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/auth/admin/login'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        _buildUrl('/auth/admin/login'),
+        headers: _getHeaders(contentType: 'application/json'),
         body: jsonEncode({
           'username': username,
           'password': password,
         }),
       );
+
+      _saveCookie(response);
 
       if (response.statusCode == 200) {
         authToken = username;
@@ -65,22 +121,40 @@ class ApiService {
   ) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/auth/customer/coba/login'),
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
+        _buildUrl('/auth/customer/coba/login'),
+        headers: _getHeaders(
+          contentType: 'application/x-www-form-urlencoded',
+        ),
         body: {
           'email': email,
           'password': password,
         },
       );
 
+      _saveCookie(response);
+
       if (response.statusCode == 200) {
-        customerEmail = email;
+        final data = jsonDecode(response.body);
+
+        if (data['success'] == true) {
+          customerEmail = data['email'] ?? email;
+          customerName = data['username'];
+          customerId = data['customerId'] is int
+              ? data['customerId']
+              : int.tryParse(data['customerId'].toString());
+
+          return {
+            "success": true,
+            "message": data['message'] ?? "Login berhasil",
+            "username": data['username'],
+            "email": data['email'],
+            "customerId": data['customerId'],
+          };
+        }
 
         return {
-          "success": true,
-          "message": "Login customer berhasil",
+          "success": false,
+          "message": data['message'] ?? "Login gagal",
         };
       }
 
@@ -107,30 +181,28 @@ class ApiService {
   ) async {
     try {
       final response = await http.post(
-        Uri.parse(
-          '$baseUrl/auth/customer/coba/register',
+        _buildUrl('/auth/customer/coba/register/api'),
+        headers: _getHeaders(
+          contentType: 'application/x-www-form-urlencoded',
         ),
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
         body: {
           'username': username,
           'email': email,
           'password': password,
-          'birthday': birthday,
         },
       );
 
       if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
         return {
-          "success": true,
-          "message": "Register berhasil",
+          "success": data['success'] ?? false,
+          "message": data['message'] ?? '',
         };
       }
 
       return {
         "success": false,
-        "message": response.body,
+        "message": "Registrasi gagal (${response.statusCode})",
       };
     } catch (e) {
       return {
@@ -146,9 +218,8 @@ class ApiService {
   static Future<List<Minuman>> getAllMinuman() async {
     try {
       final response = await http.get(
-        Uri.parse(
-          '$baseUrl/auth/admin/minuman/get',
-        ),
+        _buildUrl('/auth/admin/minuman/get'),
+        headers: _getHeaders(),
       );
 
       if (response.statusCode == 200) {
@@ -173,12 +244,10 @@ class ApiService {
   ) async {
     try {
       final response = await http.post(
-        Uri.parse(
-          '$baseUrl/auth/customer/coba/add',
+        _buildUrl('/auth/customer/coba/add'),
+        headers: _getHeaders(
+          contentType: 'application/x-www-form-urlencoded',
         ),
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
         body: {
           'minumanId': id.toString(),
         },
@@ -204,9 +273,8 @@ class ApiService {
   static Future<List<dynamic>> getCart() async {
     try {
       final response = await http.get(
-        Uri.parse(
-          '$baseUrl/auth/customer/cart',
-        ),
+        _buildUrl('/auth/customer/cart'),
+        headers: _getHeaders(),
       );
 
       if (response.statusCode == 200) {
@@ -227,9 +295,8 @@ class ApiService {
   ) async {
     try {
       final response = await http.delete(
-        Uri.parse(
-          '$baseUrl/auth/customer/cart/$id',
-        ),
+        _buildUrl('/auth/customer/cart/$id'),
+        headers: _getHeaders(),
       );
 
       final data = jsonDecode(response.body);
@@ -255,12 +322,10 @@ class ApiService {
   ) async {
     try {
       final response = await http.post(
-        Uri.parse(
-          '$baseUrl/auth/customer/payment',
+        _buildUrl('/auth/customer/payment'),
+        headers: _getHeaders(
+          contentType: 'application/x-www-form-urlencoded',
         ),
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
         body: {
           'metode': metode,
           'nominal': nominal.toString(),
@@ -287,9 +352,8 @@ class ApiService {
   static Future<List<dynamic>> getHistory() async {
     try {
       final response = await http.get(
-        Uri.parse(
-          '$baseUrl/auth/customer/history',
-        ),
+        _buildUrl('/auth/customer/history'),
+        headers: _getHeaders(),
       );
 
       if (response.statusCode == 200) {
@@ -305,8 +369,20 @@ class ApiService {
   // =========================
   // LOGOUT
   // =========================
-  static void logout() {
+  static Future<void> logout() async {
+    try {
+      await http.get(
+        _buildUrl('/auth/customer/logout'),
+        headers: _getHeaders(),
+      );
+    } catch (e) {
+      // Ignored
+    }
+
     customerEmail = null;
+    customerName = null;
+    customerId = null;
     authToken = null;
+    _sessionCookie = null;
   }
 }
