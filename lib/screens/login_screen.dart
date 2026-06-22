@@ -148,7 +148,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                       // EMAIL
                       const Text(
-                        "Email Address",
+                        "Email",
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w500,
@@ -161,7 +161,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         controller: _emailController,
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
-                          hintText: "your@email.com",
+                          hintText: "user@gmail.com",
                           hintStyle: const TextStyle(color: Colors.grey),
                           filled: true,
                           fillColor: const Color(0xFF374151),

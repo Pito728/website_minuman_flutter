@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../services/api_service.dart';
 
 class CartScreen extends StatefulWidget {
@@ -15,18 +16,6 @@ class _CartScreenState extends State<CartScreen> {
   bool isLoading = true;
 
   double totalPrice = 0;
-
-  String? selectedPayment;
-
-  final List<String> paymentMethods = [
-    'Cash',
-    'Credit Card',
-    'Debit Card',
-    'Dana',
-    'Ovo',
-    'Gopay',
-    'Bank Transfer',
-  ];
 
   @override
   void initState() {
@@ -75,71 +64,108 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   Future<void> deleteItem(int cartId) async {
-
-    final result =
-        await ApiService.deleteCartItem(cartId);
-
-    if (result['success']) {
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['message']),
-          backgroundColor: Colors.green,
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1F2937),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
         ),
-      );
-
-      loadCart();
-
-    } else {
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['message']),
-          backgroundColor: Colors.red,
+        title: const Text(
+          "Konfirmasi Hapus",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-      );
-    }
+        content: const Text(
+          "Apakah kamu yakin ingin menghapus minuman ini dari keranjang?",
+          style: TextStyle(color: Colors.grey),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Batal", style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () async {
+              Navigator.pop(ctx); // Tutup dialog
+
+              final result = await ApiService.deleteCartItem(cartId);
+
+              if (!mounted) return;
+
+              if (result['success']) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(result['message']),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+                loadCart();
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(result['message']),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            child: const Text("Hapus", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> payNow() async {
-
-    if (selectedPayment == null) {
-
+    if (cartItems.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            "Silakan pilih metode pembayaran!",
-          ),
+          content: Text("Keranjang kosong!"),
           backgroundColor: Colors.red,
         ),
       );
-
       return;
     }
 
-    final result = await ApiService.savePayment(
-      selectedPayment!,
+    setState(() {
+      isLoading = true;
+    });
+
+    // 1. Dapatkan snap token dari Midtrans
+    final midtransResult = await ApiService.createMidtransTransaction(
       totalPrice.toInt(),
+      ApiService.customerName ?? 'Customer',
+      ApiService.customerEmail ?? 'customer@mail.com',
     );
 
-    if (result['success']) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['message'] ?? 'Pembayaran berhasil!'),
-          backgroundColor: Colors.green,
-        ),
-      );
+    if (midtransResult['success']) {
+      final token = midtransResult['snapToken'];
+      final url = Uri.parse('https://app.sandbox.midtrans.com/snap/v2/vtweb/$token');
+      
+      // 2. Simpan pesanan ke database lokal dengan metode "Midtrans"
+      await ApiService.savePayment("Midtrans (Online)", totalPrice.toInt());
 
-      // Navigate to history after successful payment
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/history');
+      // 3. Arahkan pengguna ke halaman pembayaran Midtrans di browser
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
       }
 
-    } else {
+      setState(() {
+        isLoading = false;
+      });
 
+      // 4. Setelah membuka tab Midtrans, arahkan user ke halaman success
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/success');
+      }
+    } else {
+      setState(() {
+        isLoading = false;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result['message']),
+          content: Text("Gagal menghubungi Midtrans: ${midtransResult['message']}"),
           backgroundColor: Colors.red,
         ),
       );
@@ -373,55 +399,7 @@ class _CartScreenState extends State<CartScreen> {
                           ],
                         ),
 
-                        const SizedBox(height: 30),
-
-                        const Text(
-                          "Metode Pembayaran",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-
                         const SizedBox(height: 10),
-
-                        DropdownButtonFormField<String>(
-                          value: selectedPayment,
-
-                          dropdownColor:
-                              const Color(0xFF1F2937),
-
-                          style: const TextStyle(
-                            color: Colors.white,
-                          ),
-
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor:
-                                const Color(0xFF1F2937),
-
-                            border: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.circular(12),
-                            ),
-                          ),
-
-                          items: paymentMethods.map((e) {
-
-                            return DropdownMenuItem(
-                              value: e,
-                              child: Text(e),
-                            );
-                          }).toList(),
-
-                          onChanged: (value) {
-                            setState(() {
-                              selectedPayment = value;
-                            });
-                          },
-                        ),
-
-                        const SizedBox(height: 30),
 
                         // PAY BUTTON
                         SizedBox(

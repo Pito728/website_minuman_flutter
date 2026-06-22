@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../services/api_service.dart';
+import 'kelola_minuman_screen.dart';
 
 /// ============================================================
 /// DASHBOARD ADMIN SCREEN
@@ -111,21 +113,7 @@ class DashboardAdminScreen extends StatelessWidget {
 
             const SizedBox(height: 24),
 
-            // ============================================================
-            // GRID STATISTIK - 2 kolom kartu ringkas
-            // ============================================================
-            Text(
-              'Ringkasan',
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 14),
-            _buildStatistikGrid(),
 
-            const SizedBox(height: 32),
 
             // ============================================================
             // QUICK ACTIONS - Aksi cepat untuk admin
@@ -143,19 +131,7 @@ class DashboardAdminScreen extends StatelessWidget {
 
             const SizedBox(height: 32),
 
-            // ============================================================
-            // PESANAN TERBARU - Preview pesanan masuk terbaru
-            // ============================================================
-            Text(
-              'Pesanan Terbaru',
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 14),
-            _buildRecentOrders(),
+            // Bagian bawah dibiarkan kosong agar bersih dan tidak ada data palsu/gimmick.
           ],
         ),
       ),
@@ -238,160 +214,7 @@ class DashboardAdminScreen extends StatelessWidget {
     );
   }
 
-  // ============================================================
-  // WIDGET: GridView.count (2 kolom) untuk kartu statistik
-  // ============================================================
-  Widget _buildStatistikGrid() {
-    return GridView.count(
-      crossAxisCount: 2,
-      crossAxisSpacing: 14,
-      mainAxisSpacing: 14,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      childAspectRatio: 1.35,
-      children: [
-        // Kartu 1: Total Pesanan Masuk
-        _buildStatCard(
-          icon: Icons.shopping_bag,
-          iconColor: const Color(0xFF60A5FA),
-          bgGradient: [
-            const Color(0xFF1E3A5F).withOpacity(0.5),
-            const Color(0xFF111827),
-          ],
-          label: 'Total Pesanan',
-          value: '$_totalPesanan',
-          subtitle: '+12 hari ini',
-          subtitleColor: const Color(0xFF4ADE80),
-        ),
 
-        // Kartu 2: Total Pendapatan
-        _buildStatCard(
-          icon: Icons.account_balance_wallet,
-          iconColor: const Color(0xFF4ADE80),
-          bgGradient: [
-            const Color(0xFF14532D).withOpacity(0.4),
-            const Color(0xFF111827),
-          ],
-          label: 'Total Pendapatan',
-          value: 'Rp 12.4 Jt',
-          subtitle: '+Rp 1.2Jt minggu ini',
-          subtitleColor: const Color(0xFF4ADE80),
-        ),
-
-        // Kartu 3: Jumlah Produk
-        _buildStatCard(
-          icon: Icons.local_drink,
-          iconColor: const Color(0xFFFBBF24),
-          bgGradient: [
-            const Color(0xFF78350F).withOpacity(0.3),
-            const Color(0xFF111827),
-          ],
-          label: 'Jumlah Produk',
-          value: '$_jumlahProduk',
-          subtitle: '5 kategori',
-          subtitleColor: const Color(0xFFFBBF24),
-        ),
-
-        // Kartu 4: Pelanggan Aktif
-        _buildStatCard(
-          icon: Icons.people,
-          iconColor: const Color(0xFFC084FC),
-          bgGradient: [
-            const Color(0xFF581C87).withOpacity(0.3),
-            const Color(0xFF111827),
-          ],
-          label: 'Pelanggan Aktif',
-          value: '$_pelangganAktif',
-          subtitle: '+8 baru',
-          subtitleColor: const Color(0xFFC084FC),
-        ),
-      ],
-    );
-  }
-
-  // ============================================================
-  // WIDGET: Kartu statistik individual
-  // ============================================================
-  Widget _buildStatCard({
-    required IconData icon,
-    required Color iconColor,
-    required List<Color> bgGradient,
-    required String label,
-    required String value,
-    required String subtitle,
-    required Color subtitleColor,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: bgGradient,
-        ),
-        border: Border.all(
-          color: Colors.grey.shade800.withOpacity(0.4),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Icon dan label
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: iconColor.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: iconColor, size: 20),
-              ),
-              const Spacer(),
-              // Indikator tren naik
-              Icon(
-                Icons.trending_up,
-                color: subtitleColor.withOpacity(0.7),
-                size: 18,
-              ),
-            ],
-          ),
-          // Nilai utama
-          Text(
-            value,
-            style: GoogleFonts.poppins(
-              color: Colors.white,
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          // Label dan subtitle
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: GoogleFonts.poppins(
-                  color: Colors.grey.shade400,
-                  fontSize: 12,
-                ),
-              ),
-              Text(
-                subtitle,
-                style: GoogleFonts.poppins(
-                  color: subtitleColor,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
 
   // ============================================================
   // WIDGET: Daftar aksi cepat (Quick Actions) dengan ListTile
@@ -407,57 +230,14 @@ class DashboardAdminScreen extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Aksi 1: Kelola Menu/Produk
+          // Aksi 1: Tambah Minuman
           _buildActionTile(
-            icon: Icons.restaurant_menu,
-            iconColor: const Color(0xFFFBBF24),
-            title: 'Kelola Menu / Produk',
-            subtitle: 'Tambah, edit, dan hapus minuman',
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    'Navigasi ke Kelola Menu (belum diimplementasi)',
-                    style: GoogleFonts.poppins(color: Colors.white),
-                  ),
-                  backgroundColor: const Color(0xFF374151),
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              );
-            },
-          ),
-
-          // Garis pembatas antar aksi
-          Divider(
-            height: 1,
-            color: Colors.grey.shade800.withOpacity(0.3),
-            indent: 68,
-          ),
-
-          // Aksi 2: Kelola Pesanan Masuk
-          _buildActionTile(
-            icon: Icons.receipt_long,
+            icon: Icons.add_circle_outline,
             iconColor: const Color(0xFF60A5FA),
-            title: 'Kelola Pesanan Masuk',
-            subtitle: 'Lihat dan proses pesanan pelanggan',
-            trailing: _buildBadge('12'),
+            title: 'Tambah Minuman',
+            subtitle: 'Tambahkan produk minuman baru',
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    'Navigasi ke Kelola Pesanan (belum diimplementasi)',
-                    style: GoogleFonts.poppins(color: Colors.white),
-                  ),
-                  backgroundColor: const Color(0xFF374151),
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              );
+              _showAddMinumanDialog(context);
             },
           ),
 
@@ -468,55 +248,34 @@ class DashboardAdminScreen extends StatelessWidget {
             indent: 68,
           ),
 
-          // Aksi 3: Kelola Pelanggan
-          _buildActionTile(
-            icon: Icons.people_outline,
-            iconColor: const Color(0xFFC084FC),
-            title: 'Kelola Pelanggan',
-            subtitle: 'Data pelanggan terdaftar',
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    'Navigasi ke Kelola Pelanggan (belum diimplementasi)',
-                    style: GoogleFonts.poppins(color: Colors.white),
-                  ),
-                  backgroundColor: const Color(0xFF374151),
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              );
-            },
-          ),
-
-          // Garis pembatas
-          Divider(
-            height: 1,
-            color: Colors.grey.shade800.withOpacity(0.3),
-            indent: 68,
-          ),
-
-          // Aksi 4: Laporan Penjualan
+          // Aksi 2: Laporan Penjualan
           _buildActionTile(
             icon: Icons.bar_chart,
             iconColor: const Color(0xFF4ADE80),
             title: 'Laporan Penjualan',
             subtitle: 'Statistik dan grafik pendapatan',
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    'Navigasi ke Laporan (belum diimplementasi)',
-                    style: GoogleFonts.poppins(color: Colors.white),
-                  ),
-                  backgroundColor: const Color(0xFF374151),
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
+              _showLaporanDialog(context);
+            },
+          ),
+
+          // Garis pembatas
+          Divider(
+            height: 1,
+            color: Colors.grey.shade800.withOpacity(0.3),
+            indent: 68,
+          ),
+
+          // Aksi 3: Kelola Minuman
+          _buildActionTile(
+            icon: Icons.inventory_2_outlined,
+            iconColor: const Color(0xFFFBBF24),
+            title: 'Kelola Minuman',
+            subtitle: 'Edit dan hapus data minuman',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const KelolaMinumanScreen()),
               );
             },
           ),
@@ -616,148 +375,6 @@ class DashboardAdminScreen extends StatelessWidget {
   }
 
   // ============================================================
-  // WIDGET: Daftar pesanan terbaru (preview singkat)
-  // ============================================================
-  Widget _buildRecentOrders() {
-    // Dummy data pesanan terbaru
-    final recentOrders = [
-      {
-        'id': '#ORD-007',
-        'customer': 'Daffa Rizky',
-        'item': 'Es Teh Manis x3',
-        'total': 36000,
-        'status': 'Dikirim',
-        'waktu': '5 menit lalu',
-      },
-      {
-        'id': '#ORD-006',
-        'customer': 'Andi Pratama',
-        'item': 'Iced Americano x2',
-        'total': 50000,
-        'status': 'Disiapkan',
-        'waktu': '12 menit lalu',
-      },
-      {
-        'id': '#ORD-005',
-        'customer': 'Siti Nurhaliza',
-        'item': 'Matcha Latte x1',
-        'total': 32000,
-        'status': 'Diproses',
-        'waktu': '18 menit lalu',
-      },
-    ];
-
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF111827),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.grey.shade800.withOpacity(0.4),
-        ),
-      ),
-      child: Column(
-        children: recentOrders.asMap().entries.map((entry) {
-          final index = entry.key;
-          final order = entry.value;
-          final isLast = index == recentOrders.length - 1;
-
-          return Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(14),
-                child: Row(
-                  children: [
-                    // Avatar pelanggan (inisial)
-                    Container(
-                      width: 42,
-                      height: 42,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            const Color(0xFFDC2626).withOpacity(0.3),
-                            const Color(0xFF7F1D1D).withOpacity(0.5),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Center(
-                        child: Text(
-                          (order['customer'] as String)[0],
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    // Info pesanan
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                order['customer'] as String,
-                                style: GoogleFonts.poppins(
-                                  color: Colors.white,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              Text(
-                                order['waktu'] as String,
-                                style: GoogleFonts.poppins(
-                                  color: Colors.grey.shade600,
-                                  fontSize: 11,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 2),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                '${order['id']} · ${order['item']}',
-                                style: GoogleFonts.poppins(
-                                  color: Colors.grey.shade400,
-                                  fontSize: 12,
-                                ),
-                              ),
-                              Text(
-                                'Rp ${(order['total'] as int).toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}',
-                                style: GoogleFonts.poppins(
-                                  color: const Color(0xFFFBBF24),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (!isLast)
-                Divider(
-                  height: 1,
-                  color: Colors.grey.shade800.withOpacity(0.3),
-                  indent: 68,
-                ),
-            ],
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  // ============================================================
   // DIALOG: Konfirmasi logout admin
   // ============================================================
   void _showLogoutDialog(BuildContext context) {
@@ -795,14 +412,17 @@ class DashboardAdminScreen extends StatelessWidget {
           ),
           // Tombol Logout
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(ctx);
+              await ApiService.logout(); // Panggil API logout untuk menghapus session
               // Kembali ke halaman utama setelah logout
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                '/home',
-                (route) => false,
-              );
+              if (context.mounted) {
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/home',
+                  (route) => false,
+                );
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFDC2626),
@@ -815,6 +435,144 @@ class DashboardAdminScreen extends StatelessWidget {
               'Logout',
               style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
+  // DIALOG: Tambah Minuman
+  // ============================================================
+  void _showAddMinumanDialog(BuildContext context) {
+    final TextEditingController namaCtrl = TextEditingController();
+    final TextEditingController hargaCtrl = TextEditingController();
+    final TextEditingController deskripsiCtrl = TextEditingController();
+    final TextEditingController jenisCtrl = TextEditingController();
+    final TextEditingController gambarCtrl = TextEditingController();
+    bool isLoading = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            backgroundColor: const Color(0xFF1F2937),
+            title: Text('Tambah Minuman', style: GoogleFonts.poppins(color: Colors.white)),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: namaCtrl,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(labelText: 'Nama Minuman', labelStyle: TextStyle(color: Colors.grey)),
+                  ),
+                  TextField(
+                    controller: hargaCtrl,
+                    keyboardType: TextInputType.number,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(labelText: 'Harga', labelStyle: TextStyle(color: Colors.grey)),
+                  ),
+                  TextField(
+                    controller: deskripsiCtrl,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(labelText: 'Deskripsi', labelStyle: TextStyle(color: Colors.grey)),
+                  ),
+                  TextField(
+                    controller: jenisCtrl,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(labelText: 'Jenis (Kopi/Non-Kopi)', labelStyle: TextStyle(color: Colors.grey)),
+                  ),
+                  TextField(
+                    controller: gambarCtrl,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(labelText: 'URL Gambar', labelStyle: TextStyle(color: Colors.grey)),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: isLoading ? null : () => Navigator.pop(ctx),
+                child: Text('Batal', style: GoogleFonts.poppins(color: Colors.grey)),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFDC2626)),
+                onPressed: isLoading ? null : () async {
+                  setState(() => isLoading = true);
+                  final harga = int.tryParse(hargaCtrl.text) ?? 0;
+                  final res = await ApiService.createMinuman(
+                    namaCtrl.text,
+                    harga,
+                    deskripsiCtrl.text,
+                    jenisCtrl.text,
+                    gambarCtrl.text,
+                  );
+                  setState(() => isLoading = false);
+                  if (res['success'] == true) {
+                    Navigator.pop(ctx);
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(res['message']), backgroundColor: Colors.green));
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(res['message']), backgroundColor: Colors.red));
+                  }
+                },
+                child: isLoading
+                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    : const Text('Simpan', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  // ============================================================
+  // DIALOG: Laporan Penjualan
+  // ============================================================
+  void _showLaporanDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1F2937),
+        title: Text('Laporan Penjualan', style: GoogleFonts.poppins(color: Colors.white)),
+        content: SizedBox(
+          width: 400,
+          height: 300,
+          child: FutureBuilder<List<dynamic>>(
+            future: ApiService.getLaporanPenjualan(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator(color: Colors.white));
+              } else if (snapshot.hasError) {
+                return const Center(child: Text('Gagal memuat laporan', style: TextStyle(color: Colors.red)));
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Center(child: Text('Belum ada data penjualan', style: TextStyle(color: Colors.grey)));
+              }
+
+              final data = snapshot.data!;
+              return ListView.builder(
+                itemCount: data.length,
+                itemBuilder: (context, index) {
+                  final item = data[index];
+                  final tanggal = item['tanggal'] ?? 'Tanggal Tidak Diketahui';
+                  final total = item['total'] ?? 0;
+                  return ListTile(
+                    leading: const Icon(Icons.date_range, color: Colors.blueAccent),
+                    title: Text(tanggal.toString(), style: const TextStyle(color: Colors.white)),
+                    trailing: Text('Rp $total', style: const TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold)),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Tutup', style: GoogleFonts.poppins(color: Colors.grey)),
           ),
         ],
       ),

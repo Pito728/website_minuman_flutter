@@ -137,8 +137,8 @@ class ApiService {
         final data = jsonDecode(response.body);
 
         if (data['success'] == true) {
-          customerEmail = data['email'] ?? email;
-          customerName = data['username'];
+          customerEmail = data['email'];
+          customerName = data['username'] ?? email;
           customerId = data['customerId'] is int
               ? data['customerId']
               : int.tryParse(data['customerId'].toString());
@@ -160,7 +160,7 @@ class ApiService {
 
       return {
         "success": false,
-        "message": "Email atau password salah",
+        "message": "Username atau password salah",
       };
     } catch (e) {
       return {
@@ -232,6 +232,162 @@ class ApiService {
 
       return [];
     } catch (e) {
+      return [];
+    }
+  }
+
+  // =========================
+  // CREATE MINUMAN (ADMIN)
+  // =========================
+  static Future<Map<String, dynamic>> createMinuman(
+    String nama,
+    int harga,
+    String deskripsi,
+    String jenis,
+    String gambar,
+  ) async {
+    try {
+      final response = await http.post(
+        _buildUrl('/auth/admin/minuman/create'),
+        headers: _getHeaders(contentType: 'application/json'),
+        body: jsonEncode({
+          'nama': nama,
+          'harga': harga,
+          'deskripsi': deskripsi,
+          'jenis': jenis,
+          'gambar': gambar,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return {
+          "success": true,
+          "message": "Minuman berhasil ditambahkan",
+        };
+      }
+
+      return {
+        "success": false,
+        "message": "Gagal menambahkan minuman (${response.statusCode})",
+      };
+    } catch (e) {
+      return {
+        "success": false,
+        "message": e.toString(),
+      };
+    }
+  }
+
+  // =========================
+  // UPDATE MINUMAN (ADMIN)
+  // =========================
+  static Future<Map<String, dynamic>> updateMinuman(
+    int id,
+    String nama,
+    int harga,
+    String deskripsi,
+    String jenis,
+    String gambar,
+  ) async {
+    try {
+      final response = await http.put(
+        _buildUrl('/auth/admin/minuman/update/$id'),
+        headers: _getHeaders(contentType: 'application/json'),
+        body: jsonEncode({
+          'id': id,
+          'nama': nama,
+          'harga': harga,
+          'deskripsi': deskripsi,
+          'jenis': jenis,
+          'gambar': gambar,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return {"success": true, "message": "Minuman berhasil diupdate"};
+      }
+      return {"success": false, "message": "Gagal update minuman (${response.statusCode})"};
+    } catch (e) {
+      return {"success": false, "message": e.toString()};
+    }
+  }
+
+  // =========================
+  // DELETE MINUMAN (ADMIN)
+  // =========================
+  static Future<Map<String, dynamic>> deleteMinuman(int id) async {
+    try {
+      final response = await http.delete(
+        _buildUrl('/auth/admin/minuman/delete/$id'),
+        headers: _getHeaders(),
+      );
+
+      if (response.statusCode == 200) {
+        return {"success": true, "message": "Minuman berhasil dihapus"};
+      }
+      return {"success": false, "message": "Gagal menghapus minuman (${response.statusCode})"};
+    } catch (e) {
+      return {"success": false, "message": e.toString()};
+    }
+  }
+
+  // =========================
+  // MIDTRANS SNAP TOKEN
+  // =========================
+  static Future<Map<String, dynamic>> createMidtransTransaction(
+    int amount,
+    String name,
+    String email,
+  ) async {
+    try {
+      final response = await http.post(
+        _buildUrl('/api/payments/snap-token'),
+        headers: _getHeaders(contentType: 'application/json'),
+        body: jsonEncode({
+          'amount': amount,
+          'name': name,
+          'email': email,
+          'phone': '08123456789'
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return {
+          "success": true,
+          "snapToken": data['snapToken'],
+          "orderId": data['orderId'],
+        };
+      }
+
+      return {
+        "success": false,
+        "message": "Gagal membuat transaksi midtrans",
+      };
+    } catch (e) {
+      return {
+        "success": false,
+        "message": e.toString(),
+      };
+    }
+  }
+
+  // =========================
+  // GET LAPORAN PENJUALAN
+  // =========================
+  static Future<List<dynamic>> getLaporanPenjualan() async {
+    try {
+      final response = await http.get(
+        _buildUrl('/auth/admin/laporan'),
+        headers: _getHeaders(),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      return [];
+    } catch (e) {
+      print('Error getLaporanPenjualan: $e');
       return [];
     }
   }
@@ -371,10 +527,9 @@ class ApiService {
   // =========================
   static Future<void> logout() async {
     try {
-      await http.get(
-        _buildUrl('/auth/customer/logout'),
-        headers: _getHeaders(),
-      );
+      // Hit endpoint logout untuk admin dan customer
+      await http.get(_buildUrl('/auth/customer/logout'), headers: _getHeaders());
+      await http.get(_buildUrl('/auth/admin/logout'), headers: _getHeaders());
     } catch (e) {
       // Ignored
     }

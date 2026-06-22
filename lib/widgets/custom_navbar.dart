@@ -96,6 +96,12 @@ class CustomNavbar extends StatelessWidget {
                   );
                   items.add(
                     const PopupMenuItem(
+                      value: '/history',
+                      child: Text('History', style: TextStyle(color: Colors.cyan)),
+                    ),
+                  );
+                  items.add(
+                    const PopupMenuItem(
                       value: '/logout',
                       child: Text('Logout', style: TextStyle(color: Colors.red)),
                     ),
@@ -103,8 +109,14 @@ class CustomNavbar extends StatelessWidget {
                 } else {
                   items.add(
                     const PopupMenuItem(
+                      value: '/admin-login',
+                      child: Text('Admin Login', style: TextStyle(color: Colors.blue)),
+                    ),
+                  );
+                  items.add(
+                    const PopupMenuItem(
                       value: '/login',
-                      child: Text('Login', style: TextStyle(color: Colors.orange)),
+                      child: Text('Customer Login', style: TextStyle(color: Colors.orange)),
                     ),
                   );
                 }
@@ -185,6 +197,17 @@ class CustomNavbar extends StatelessWidget {
             ),
             const SizedBox(width: 18),
             _outlineButton(
+              "History",
+              Colors.cyan,
+              () {
+                Navigator.pushNamed(
+                  context,
+                  '/history',
+                );
+              },
+            ),
+            const SizedBox(width: 18),
+            _outlineButton(
               "Logout",
               Colors.red,
               () async {
@@ -201,7 +224,7 @@ class CustomNavbar extends StatelessWidget {
               () {
                 Navigator.pushNamed(
                   context,
-                  '/login',
+                  '/admin-login',
                 );
               },
             ),

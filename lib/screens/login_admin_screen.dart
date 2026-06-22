@@ -18,7 +18,7 @@ class LoginAdminScreen extends StatefulWidget {
 class _LoginAdminScreenState extends State<LoginAdminScreen>
     with SingleTickerProviderStateMixin {
   // Controller untuk form input
-  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
@@ -59,7 +59,7 @@ class _LoginAdminScreenState extends State<LoginAdminScreen>
   @override
   void dispose() {
     _animController.dispose();
-    _emailController.dispose();
+    _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -268,9 +268,9 @@ class _LoginAdminScreenState extends State<LoginAdminScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ---- LABEL EMAIL ----
+            // ---- LABEL USERNAME ----
             Text(
-              'Email',
+              'Username',
               style: GoogleFonts.poppins(
                 color: Colors.grey.shade300,
                 fontSize: 13,
@@ -279,21 +279,18 @@ class _LoginAdminScreenState extends State<LoginAdminScreen>
             ),
             const SizedBox(height: 8),
 
-            // ---- INPUT EMAIL ----
+            // ---- INPUT USERNAME ----
             TextFormField(
-              controller: _emailController,
-              keyboardType: TextInputType.emailAddress,
+              controller: _usernameController,
+              keyboardType: TextInputType.text,
               style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
               decoration: _inputDecoration(
-                hintText: 'admin@doanddrinks.com',
-                prefixIcon: Icons.email_outlined,
+                hintText: 'admin',
+                prefixIcon: Icons.person_outline,
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Email tidak boleh kosong';
-                }
-                if (!value.contains('@')) {
-                  return 'Format email tidak valid';
+                  return 'Username tidak boleh kosong';
                 }
                 return null;
               },

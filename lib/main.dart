@@ -12,6 +12,7 @@ import 'screens/contact_screen.dart';
 import 'screens/menu_screen.dart';
 import 'screens/collaboration_screen.dart';
 import 'screens/download_screen.dart';
+import 'screens/transaction_success_screen.dart';
 
 // Halaman baru
 import 'screens/keranjang_screen.dart';
@@ -112,6 +113,7 @@ class _MyAppState extends State<MyApp> {
         '/download': (context) => const DownloadScreen(),
 
         // Route halaman baru
+        '/success': (context) => const TransactionSuccessScreen(),
         '/keranjang': (context) => const KeranjangScreen(),
         '/riwayat-pesanan': (context) => const RiwayatPesananScreen(),
         '/admin-login': (context) => const LoginAdminScreen(),
